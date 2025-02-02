@@ -36,6 +36,7 @@ dependencies = [
  "handlebars",
  "inquire",
  "serde",
+ "serde_json",
  "serde_yaml",
  "thiserror",
  "tokio",
