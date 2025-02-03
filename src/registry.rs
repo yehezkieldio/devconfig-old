@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::error::ConfigError;
 
 #[async_trait]
-pub trait ConfigProvider: Send + Sync {
+pub trait AmarisProvider: Send + Sync {
     fn name(&self) -> &'static str;
     fn description(&self) -> &'static str;
     async fn check_prerequisites(&self) -> Result<(), ConfigError>;
@@ -13,23 +13,23 @@ pub trait ConfigProvider: Send + Sync {
     async fn remove(&self) -> Result<(), ConfigError>;
 }
 
-pub struct ConfigRegistry {
-    providers: HashMap<String, Arc<dyn ConfigProvider>>,
+pub struct AmarisRegistry {
+    providers: HashMap<String, Arc<dyn AmarisProvider>>,
 }
 
-impl ConfigRegistry {
+impl AmarisRegistry {
     pub fn new() -> Self {
         Self {
             providers: HashMap::new(),
         }
     }
 
-    pub fn register<P: ConfigProvider + 'static>(&mut self, provider: P) {
+    pub fn register<P: AmarisProvider + 'static>(&mut self, provider: P) {
         self.providers
             .insert(provider.name().to_string(), Arc::new(provider));
     }
 
-    pub fn get_provider(&self, name: &str) -> Option<Arc<dyn ConfigProvider>> {
+    pub fn get_provider(&self, name: &str) -> Option<Arc<dyn AmarisProvider>> {
         self.providers.get(name).cloned()
     }
 

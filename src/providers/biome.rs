@@ -1,9 +1,10 @@
-use crate::core::config_registry::ConfigProvider;
-use crate::error::ConfigError;
 use async_trait::async_trait;
 use std::fs;
 use std::path::Path;
 use which::which;
+
+use crate::error::ConfigError;
+use crate::registry::AmarisProvider;
 
 pub struct BiomeProvider;
 
@@ -87,7 +88,7 @@ impl BiomeProvider {
 }
 
 #[async_trait]
-impl ConfigProvider for BiomeProvider {
+impl AmarisProvider for BiomeProvider {
     fn name(&self) -> &'static str {
         "biome"
     }
@@ -111,8 +112,8 @@ impl ConfigProvider for BiomeProvider {
     }
 
     async fn install(&self) -> Result<(), ConfigError> {
-        println!("🚀 Starting installation of Biome configuration dependencies...");
-        println!("📦 Installing packages with bun (installing @biomejs/biome and ultracite)...");
+        println!("Starting installation of Biome configuration...");
+        println!("Installing packages with bun (installing @biomejs/biome and ultracite)...");
 
         let output = tokio::process::Command::new("bun")
             .args(&["install", "--dev", "@biomejs/biome", "ultracite"])
@@ -121,27 +122,30 @@ impl ConfigProvider for BiomeProvider {
             .map_err(|e| ConfigError::DependencyError(e.to_string()))?;
 
         if !output.status.success() {
-            println!("❌ Error during package installation:");
+            println!("Error during package installation:");
             return Err(ConfigError::DependencyError(
                 String::from_utf8_lossy(&output.stderr).to_string(),
             ));
         }
 
-        println!("✅ Packages installed successfully");
-        println!("📄 Generating biome.json configuration file...");
+        println!("Packages installed successfully!");
+        println!("Generating biome.json configuration file...");
 
         let biome_config = BiomeProvider::configuration();
 
         fs::write("biome.json", serde_json::to_string_pretty(&biome_config)?)
             .map_err(|e| ConfigError::FileWriteError(e.to_string()))?;
 
-        println!("✅ Biome configuration file generated successfully");
-        println!("🎉 Biome configuration installed successfully");
+        println!("Biome configuration file generated successfully!");
+        println!("Biome configuration installed successfully!");
 
         Ok(())
     }
 
     async fn remove(&self) -> Result<(), ConfigError> {
+        println!("Removing Biome configuration...");
+        println!("Removing biome.json configuration file...");
+
         for file in &["biome.json"] {
             if Path::new(file).exists() {
                 fs::remove_file(file).map_err(|e| ConfigError::FileWriteError(e.to_string()))?;

@@ -1,28 +1,18 @@
-mod commands;
-mod core;
-mod error;
-mod providers;
+pub mod args;
+pub mod error;
+pub mod providers;
+pub mod registry;
 
+use args::CLI;
 use clap::Parser;
-use commands::Commands;
-use core::config_registry::ConfigRegistry;
 use providers::biome::BiomeProvider;
-
-#[derive(Parser)]
-#[command(name = "amaris")]
-#[command(author = "elizielx")]
-#[command(version = env!("CARGO_PKG_VERSION"))]
-#[command(about = "Automate opinionated development configurations.", long_about = None)]
-struct CLI {
-    #[command(subcommand)]
-    command: Commands,
-}
+use registry::AmarisRegistry;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli: CLI = CLI::parse();
 
-    let mut registry = ConfigRegistry::new();
+    let mut registry: AmarisRegistry = AmarisRegistry::new();
     registry.register(BiomeProvider);
 
     match cli.command.execute(&registry).await {

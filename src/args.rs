@@ -1,24 +1,43 @@
+use clap::Parser;
 use clap::Subcommand;
 use inquire::Select;
 
-use crate::core::config_registry::ConfigRegistry;
+use crate::registry::AmarisRegistry;
+
+#[derive(Parser)]
+#[command(name = "amaris")]
+#[command(author = "elizielx")]
+#[command(version = env!("CARGO_PKG_VERSION"))]
+#[command(about = "Automate opinionated development configurations.", long_about = None)]
+pub struct CLI {
+    #[command(subcommand)]
+    pub command: Commands,
+}
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Installs a specific configuration.
+    ///
+    /// Optionally, you can provide a config file with `--config` or `-c`
     Install {
         #[arg(short, long)]
         config: Option<String>,
     },
+    /// Lists all available configurations.
     List,
+    /// Removes a specific configuration.
+    ///
+    /// This requires a config file to be specified via `--config` or `-c`
     Remove {
         #[arg(short, long)]
         config: String,
     },
+    /// Runs diagnostic commands to check the system's state.
     Doctor,
 }
 
 impl Commands {
-    pub async fn execute(&self, registry: &ConfigRegistry) -> anyhow::Result<()> {
+    pub async fn execute(&self, registry: &AmarisRegistry) -> anyhow::Result<()> {
         match self {
             Commands::Install { config } => {
                 let config_name = match config {
