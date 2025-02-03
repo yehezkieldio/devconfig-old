@@ -3,7 +3,6 @@ use crate::error::ConfigError;
 use async_trait::async_trait;
 use std::fs;
 use std::path::Path;
-use tracing::info;
 use which::which;
 
 pub struct BiomeProvider;
@@ -112,8 +111,8 @@ impl ConfigProvider for BiomeProvider {
     }
 
     async fn install(&self) -> Result<(), ConfigError> {
-        info!("🚀 Starting installation of Biome configuration dependencies...");
-        info!("📦 Installing packages with bun (installing @biomejs/biome and ultracite)...");
+        println!("🚀 Starting installation of Biome configuration dependencies...");
+        println!("📦 Installing packages with bun (installing @biomejs/biome and ultracite)...");
 
         let output = tokio::process::Command::new("bun")
             .args(&["install", "--dev", "@biomejs/biome", "ultracite"])
@@ -122,22 +121,22 @@ impl ConfigProvider for BiomeProvider {
             .map_err(|e| ConfigError::DependencyError(e.to_string()))?;
 
         if !output.status.success() {
-            tracing::error!("❌ Error during package installation:");
+            println!("❌ Error during package installation:");
             return Err(ConfigError::DependencyError(
                 String::from_utf8_lossy(&output.stderr).to_string(),
             ));
         }
 
-        tracing::info!("✅ Packages installed successfully");
-        tracing::info!("📄 Generating biome.json configuration file...");
+        println!("✅ Packages installed successfully");
+        println!("📄 Generating biome.json configuration file...");
 
         let biome_config = BiomeProvider::configuration();
 
         fs::write("biome.json", serde_json::to_string_pretty(&biome_config)?)
             .map_err(|e| ConfigError::FileWriteError(e.to_string()))?;
 
-        tracing::info!("✅ Biome configuration file generated successfully");
-        tracing::info!("🎉 Biome configuration installed successfully");
+        println!("✅ Biome configuration file generated successfully");
+        println!("🎉 Biome configuration installed successfully");
 
         Ok(())
     }
