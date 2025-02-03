@@ -1,6 +1,5 @@
 use clap::Subcommand;
 use inquire::Select;
-use tracing::info;
 
 use crate::core::config_registry::ConfigRegistry;
 
@@ -25,10 +24,11 @@ impl Commands {
                 let config_name = match config {
                     Some(name) => name.clone(),
                     None => {
-                        let configs = registry.available_configs();
+                        let configs: Vec<(&str, &str)> = registry.available_configs();
                         let options: Vec<_> = configs.iter().map(|(_, desc)| *desc).collect();
                         let selection =
                             Select::new("Select configuration to install:", options).prompt()?;
+
                         configs
                             .iter()
                             .find(|(_, desc)| *desc == selection)
@@ -38,10 +38,8 @@ impl Commands {
                 };
 
                 if let Some(provider) = registry.get_provider(&config_name) {
-                    info!("Installing {} configuration...", config_name);
                     provider.check_prerequisites().await?;
                     provider.install().await?;
-                    info!("Installation complete!");
                 }
             }
             Commands::List => {
@@ -52,18 +50,15 @@ impl Commands {
             }
             Commands::Remove { config } => {
                 if let Some(provider) = registry.get_provider(config) {
-                    info!("Removing {} configuration...", config);
                     provider.remove().await?;
-                    info!("Removal complete!");
                 }
             }
             Commands::Doctor => {
-                info!("Running diagnostics...");
                 for (name, _) in registry.available_configs() {
                     if let Some(provider) = registry.get_provider(&name) {
                         match provider.check_prerequisites().await {
-                            Ok(_) => println!("✅ {}: All prerequisites met", name),
-                            Err(e) => println!("❌ {}: {}", name, e),
+                            Ok(_) => println!("All prerequisites met for {}", name),
+                            Err(e) => println!("All prerequisites are not met for {}\n{}", name, e),
                         }
                     }
                 }

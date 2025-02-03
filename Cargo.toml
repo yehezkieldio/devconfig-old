@@ -4,9 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+ansi_term = "0.12.1"
 anyhow = "1.0.95"
 async-trait = "0.1.86"
+chrono = "0.4.39"
 clap = { version = "4.5.27", features = ["derive"] }
+colored = "3.0.0"
 handlebars = "6.3.0"
 inquire = "0.7.5"
 serde = { version = "1.0.217", features = ["derive"] }

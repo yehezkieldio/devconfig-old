@@ -19,3 +19,9 @@ pub enum ConfigError {
     #[error("Dependency installation failed: {0}")]
     DependencyError(String),
 }
+
+impl From<serde_json::Error> for ConfigError {
+    fn from(error: serde_json::Error) -> Self {
+        ConfigError::FileWriteError(error.to_string())
+    }
+}
